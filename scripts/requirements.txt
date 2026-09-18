@@ -1,2 +1,5 @@
 pypdf
 fonttools
+python-docx
+beautifulsoup4
+markdown-it-py
