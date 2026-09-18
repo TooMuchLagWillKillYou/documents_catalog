@@ -1,2 +1,7 @@
+
+# directories
 docs
+__pycache__
+
+# files
 TODO.md
