@@ -5,6 +5,7 @@ cleaner.py cleans text, one step at the time
 import re
 import unicodedata
 from collections import Counter
+from reader import Document
 
 def _remove_repeated_lines(text: str) -> str:
     counter = Counter()
@@ -61,24 +62,36 @@ def _reflow_paragraphs(text: str) -> str:
     return "\n".join(out)
 
 
-def _clean_pdf(text: str) -> str:
-    text = _remove_repeated_lines(text)
-    text = _remove_page_numbers(text)
-    text = _dehyphenate(text)
-    text = _normalize_whitespace(text)
-    text = _reflow_paragraphs(text)
+def _clean_pdf(content: str) -> str:
+    content = _remove_repeated_lines(content)
+    content = _remove_page_numbers(content)
+    content = _dehyphenate(content)
+    content = _normalize_whitespace(content)
+    content = _reflow_paragraphs(content)
+    return content
 
 
-def _clean_txt(text: str) -> str:
-    text = _normalize_whitespace(text)
-    text = _reflow_paragraphs(text)
-    return text
+def _clean_txt(content: str) -> str:
+    content = _normalize_whitespace(content)
+    content = _reflow_paragraphs(content)
+    return content
 
 
-def clean(path: str, text: str) -> str:
-    if path.endswith(".pdf"):
-        return _clean_pdf(text)
-    elif path.endswith(".txt"):
-        return _clean_txt(text)
-    else:
-        return _normalize_whitespace(text)
+def clean(files: list[Document]):
+    result: list[Document] = []
+
+    for f in files:
+        if f.filename.endswith(".pdf"):
+            f.content = _clean_pdf(f.content)
+        elif f.filename.endswith(".txt"):
+            f.content = _clean_txt(f.content)
+        else:
+            f.content = _normalize_whitespace(f.content)
+        result.append(f)
+
+    print(f"FILES CLEANED")
+    print(f"\t{"FILENAME":<20}{"CHARS":>10}")
+    for f in result:
+        print(f"\t{f.filename[:20]:<20}{len(f.content):>10}")
+
+    return result
