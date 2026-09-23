@@ -3,3 +3,7 @@ fonttools
 python-docx
 beautifulsoup4
 markdown-it-py
+openai
+numpy
+chromadb
+sentence-transformers
