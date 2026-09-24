@@ -2,6 +2,7 @@
 # directories
 docs
 __pycache__
+chroma 
 
 # files
 TODO.md
