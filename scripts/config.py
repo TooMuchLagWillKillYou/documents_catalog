@@ -19,3 +19,7 @@ OPENAI_PRICE_PER_M = 0.13
 OPENAI_BATCH_SIZE = 300                         # max inputs per request
 OPENAI_BATCH_CHARS = 250_000                    # max chars per request: a token is at least ~1 char, so this stays under the 300k token limit
 LOCAL_MODEL = "all-MiniLM-L6-v2"                # 384 dim — ~88 MB, runs on CPU
+
+COLLECTION_NAME = "documents_catalog"
+
+K = 4
