@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from markdown_it import MarkdownIt
 from pathlib import Path
 from dataclasses import dataclass, field
+from config import NOISE
 
 @dataclass
 class Document:
@@ -20,8 +21,6 @@ class Document:
     metadata: dict = field(default_factory=dict)
 
 logging.getLogger("pypdf").setLevel(logging.ERROR)
-
-NOISE = ["script", "style", "header", "nav", "aside", "footer"]
 
 def _read_pdf(path: str) -> list[Document]:
     

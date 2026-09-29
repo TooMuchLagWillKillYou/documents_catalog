@@ -1,8 +1,7 @@
 import re
 from embedder import cosine_similarity
+from config import MAX_CHARS, SENTENCE_END
 
-MAX_CHARS = 2000                          # ~500 tokens, well under the embedding model's 8,191-token input limit
-SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
 
 def split_phrases(content: str, max_chars: int = MAX_CHARS) -> list[str]:
     """

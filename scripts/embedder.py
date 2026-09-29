@@ -1,10 +1,5 @@
 import numpy as np
-
-OPENAI_MODEL = "text-embedding-3-large"   # 3072 dim — $0.13 / 1M token
-OPENAI_PRICE_PER_M = 0.13
-OPENAI_BATCH_SIZE = 300                    # max inputs per request
-OPENAI_BATCH_CHARS = 250_000               # max chars per request: a token is at least ~1 char, so this stays under the 300k token limit
-LOCAL_MODEL = "all-MiniLM-L6-v2"          # 384 dim — ~88 MB, runs on CPU
+from config import OPENAI_MODEL, OPENAI_PRICE_PER_M, OPENAI_BATCH_SIZE, OPENAI_BATCH_CHARS, LOCAL_MODEL
 
 def cosine_similarity(vector_a, vector_b):
     vector_a = np.array(vector_a, dtype=np.float32)

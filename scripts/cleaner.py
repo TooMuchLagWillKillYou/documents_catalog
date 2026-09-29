@@ -6,6 +6,7 @@ import re
 import unicodedata
 from collections import Counter
 from reader import Document
+from config import PAGE_NUMBER
 
 def _repeated_lines(text: str) -> set[str]:
     """
@@ -31,9 +32,6 @@ def _remove_repeated_lines(text: str, to_remove: set[str]) -> str:
         if r.strip() not in to_remove:
             to_keep.append(r)
     return "\n".join(to_keep)
-
-
-PAGE_NUMBER = re.compile(r"\s*(pagina\s+)?\d+(\s+di\s+\d+)?\s*", re.I)
 
 
 def _remove_page_numbers(page: str, repeated: set[str]) -> str:
