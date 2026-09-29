@@ -1,6 +1,7 @@
 
 # directories
 docs
+out
 __pycache__
 chroma 
 
