@@ -32,7 +32,7 @@ def _read_pdf(path: str) -> list[Document]:
     
     for i, page in enumerate(r.pages):
         page_content = page.extract_text()
-        content += page_content
+        content += page_content + "\n"
         pages.append(
             { "page": i + 1, "content":  page_content}
         )
@@ -47,9 +47,9 @@ def _read_csv(path: str) -> Document:
     with open(path, encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
 
-    content = ""
-    for r in rows:
-        content += "\n".join(f"{campo}: {valore}" for campo, valore in r.items())
+    content = "\n\n".join(
+        "\n".join(f"{campo}: {valore}" for campo, valore in r.items()) for r in rows
+    )
 
     return Document(Path(path).name, path, content, {"source": path, "rows": len(rows), "type": "CSV"})
 
@@ -103,12 +103,12 @@ def read_directory(dir: str):
     and one with files that couldn't have been read 
     """
     files = os.scandir(dir)
-    read_files: list[Document] = []
+    files_read: list[Document] = []
     failed_files: dict[str, str] = {}
 
     for f in files:
         try:
-            read_files.append(read(f.path))
+            files_read.append(read(f.path))
         except ValueError as e:
             failed_files[f.name] = e
             continue
@@ -118,7 +118,7 @@ def read_directory(dir: str):
 
     print(f"FILES READ")
     print(f"\t{"FILENAME":<20}{"CHARS":>10}")
-    for d in read_files:
+    for d in files_read:
         print(f"\t{d.filename[:20]:<20}{len(d.content):>10}")
 
     print("FAILED FILES")
@@ -126,4 +126,4 @@ def read_directory(dir: str):
     for k, v in failed_files.items():
         print(f"\t{k[:20]:<20}{v}")
 
-    return read_files, failed_files
+    return files_read, failed_files

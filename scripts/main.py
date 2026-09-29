@@ -1,21 +1,30 @@
 from pathlib import Path
-from reader import read_directory
+from reader import read_directory, Document
 from cleaner import clean
-from chunker import semantic_chunk
+from chunker import semantic_chunk, split_phrases
 from dotenv import load_dotenv
-from embedder import embed, embed_for_semantic_chuking
+from embedder import embed
 from vectorstore import create_collection, index
 
 load_dotenv()
 
-SCRIPTS = Path(__file__).parent
-DOCS_DIRECTORY = SCRIPTS / "docs"
+SCRIPTS_DIR = Path(__file__).parent
+DOCS_DIR = SCRIPTS_DIR / "docs"
+OUTPUT_DIR = SCRIPTS_DIR / "out"
 THRESHOLD = 0.4
+
+
+def _ouput(files: list[Document], order: int, step: str):
+    for file in files:
+        with open(OUTPUT_DIR / f"_{order}_output_{step}_{file.filename}.md", "w", encoding="utf-8") as f:
+            f.write(file.content)
 
 if __name__ == "__main__":
 
-    files, _ = read_directory(DOCS_DIRECTORY)
+    files, _ = read_directory(DOCS_DIR)
+    _ouput(files, 1, "reading")
     cleaned_files = clean(files)
+    _ouput(cleaned_files, 2, "cleaning")
 
     print(f"FILES CHUNKED")
     print(f"\t{"FILENAME":<20}{"CHUNKS":>10}")
@@ -23,8 +32,8 @@ if __name__ == "__main__":
     ids, documents, vectors, metadatas = [], [], [], []
     for f in cleaned_files:
 
-        sentence_vectors = embed_for_semantic_chuking(f.content)
-        chunks = semantic_chunk(f.content, THRESHOLD, sentence_vectors)
+        phrases = split_phrases(f.content)
+        chunks = semantic_chunk(phrases, THRESHOLD, embed(phrases)) if phrases else []
         print(f"\t{f.filename[:20]:<20}{len(chunks):>10}")
         if not chunks:
             continue

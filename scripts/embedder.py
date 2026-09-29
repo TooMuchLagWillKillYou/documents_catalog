@@ -2,7 +2,8 @@ import numpy as np
 
 OPENAI_MODEL = "text-embedding-3-large"   # 3072 dim — $0.13 / 1M token
 OPENAI_PRICE_PER_M = 0.13
-OPENAI_BATCH_SIZE = 300                    # inputs per request, keeps each request under the ~300k token limit
+OPENAI_BATCH_SIZE = 300                    # max inputs per request
+OPENAI_BATCH_CHARS = 250_000               # max chars per request: a token is at least ~1 char, so this stays under the 300k token limit
 LOCAL_MODEL = "all-MiniLM-L6-v2"          # 384 dim — ~88 MB, runs on CPU
 
 def cosine_similarity(vector_a, vector_b):
@@ -13,13 +14,27 @@ def cosine_similarity(vector_a, vector_b):
 
     return float(result)
 
+def _openai_batches(content: list[str]):
+    """
+    Groups 'content' in batches of at most OPENAI_BATCH_SIZE inputs and OPENAI_BATCH_CHARS chars
+    """
+    batch, chars = [], 0
+    for text in content:
+        if batch and (len(batch) == OPENAI_BATCH_SIZE or chars + len(text) > OPENAI_BATCH_CHARS):
+            yield batch
+            batch, chars = [], 0
+        batch.append(text)
+        chars += len(text)
+    if batch:
+        yield batch
+
 def embed_openai(content: list[str]):
     from openai import OpenAI
 
     client = OpenAI()
     vectors, tokens = [], 0
-    for i in range(0, len(content), OPENAI_BATCH_SIZE):
-        r = client.embeddings.create(model=OPENAI_MODEL, input=content[i:i + OPENAI_BATCH_SIZE])
+    for batch in _openai_batches(content):
+        r = client.embeddings.create(model=OPENAI_MODEL, input=batch)
         tokens += r.usage.total_tokens
         vectors.extend(d.embedding for d in r.data)
 
@@ -30,7 +45,7 @@ def embed_openai(content: list[str]):
 
 _local_model = None
 
-def embed_local(content: str):
+def embed_local(content: list[str]):
     global _local_model
 
     if _local_model is None:
@@ -40,23 +55,10 @@ def embed_local(content: str):
     return np.asarray(_local_model.encode(content), dtype=np.float32)    
 
 
-def embed(content: str, backend: str = "openai") -> np.ndarray[np.floating]:
+def embed(content: list[str], backend: str = "openai") -> np.ndarray[np.floating]:
     if backend == "openai":
         return embed_openai(content)
     elif backend == "local":
         return embed_local(content)
     else:
         raise ValueError(f"{__file__}: unkown backend \"{backend}\"")
-
-def embed_for_semantic_chuking(content: str):
-    phrases = []
-
-    for row in content.split("\n"):
-        for phrase in row.split(". "):
-            if phrase.strip():
-                phrases.append(phrase.strip())
-
-    if not phrases:
-        return []
-
-    return embed(phrases)
