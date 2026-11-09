@@ -2,6 +2,7 @@ from pathlib import Path
 
 import re
 
+CHROMADB_DIR = Path(__file__).parent.parent / "chroma"
 SCRIPTS_DIR = Path(__file__).parent
 DOCS_DIR = SCRIPTS_DIR.parent / "docs"
 OUTPUT_DIR = SCRIPTS_DIR.parent / "out"
@@ -16,7 +17,7 @@ SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
 
 OPENAI_MODEL = "text-embedding-3-large"         # 3072 dim — $0.13 / 1M token
 OPENAI_PRICE_PER_M = 0.13
-OPENAI_BATCH_SIZE = 300                         # max inputs per request
+OPENAI_BATCH_SIZE = 1000                         # max inputs per request
 OPENAI_BATCH_CHARS = 250_000                    # max chars per request: a token is at least ~1 char, so this stays under the 300k token limit
 LOCAL_MODEL = "all-MiniLM-L6-v2"                # 384 dim — ~88 MB, runs on CPU
 
