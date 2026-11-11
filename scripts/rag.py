@@ -5,6 +5,7 @@ from loaders import load
 from clean import clean, pipeline_for
 from chunk import chunk_recursive
 from embeddings import embed
+from pathlib import Path
 
 def create_collection():
     client = chromadb.PersistentClient(path=str(CHROMADB_DIR))
@@ -27,6 +28,8 @@ def index():
     for path in sorted(DOCS_DIR.glob("*")):
 
         try:
+            extension = Path(path).suffix.lower()
+
             documents = load(str(path))
             raw_content = "\n".join(d.content for d in documents)
             clean_content = clean(raw_content, pipeline_for(str(path)))
@@ -38,7 +41,7 @@ def index():
                 metadatas.append({"source": path.name})
 
             indexed_documents += 1
-            print(f"\t{path.stem}: {len(chunks)} chunks")
+            print(f"\t{path.stem[:24]:<28}{extension:<8}{len(chunks)} chunks")
         except ValueError as e:
             print(e)
     
