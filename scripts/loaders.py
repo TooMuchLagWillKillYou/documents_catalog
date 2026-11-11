@@ -3,10 +3,8 @@ from dataclasses import dataclass, field
 from pypdf import PdfReader
 from bs4 import BeautifulSoup
 from markdown_it import MarkdownIt
-
+from config import NOISE
 import docx
-
-NOISE = ["script", "style", "nav", "footer", "header", "aside"]
 
 @dataclass 
 class Document:
@@ -116,4 +114,4 @@ def load(path: str) -> list[Document]:
     if extension == ".txt":
         return _load_txt(path)
     
-    raise ValueError(f"\t{path.stem}: unsupported document format '{extension}'")
+    raise ValueError(f"\t{Path(path).stem[:24]:<28}{extension:<8}unsupported document format")

@@ -13,7 +13,7 @@ Two backends behind the same signature:
 
 Re-running the same query pays for the embedding again — we're talking $0.0000002.
 """
-from config import LOCAL_MODEL, OPENAI_MODEL, OPENAI_PRICE_PER_M, OPENAI_BATCH_SIZE, OPENAI_BATCH_CHARS
+from config import LOCAL_EMBEDDING_MODEL, CLOUD_EMBEDDING_MODEL, OPENAI_PRICE_PER_M, OPENAI_BATCH_SIZE, OPENAI_BATCH_CHARS
 from dotenv import load_dotenv
 
 import numpy as np
@@ -55,7 +55,7 @@ def _embed_openai(texts):
     vectors, tot_tokens = [], 0
 
     for batch in _openai_batches(texts):
-        response = client.embeddings.create(model=OPENAI_MODEL, input=batch)
+        response = client.embeddings.create(model=CLOUD_EMBEDDING_MODEL, input=batch)
         tot_tokens += response.usage.total_tokens
         vectors.extend(d.embedding for d in response.data)
 
@@ -65,7 +65,7 @@ def _embed_openai(texts):
 
     return np.asarray(vectors, dtype=np.float32)
 
-_local_model = None
+_local_embedding_model = None
 
 def _embed_local(texts):
     """Embedding with sentence-transformers, on YOUR machine.
@@ -73,13 +73,13 @@ def _embed_local(texts):
     The first use downloads the model (~88 MB) into the Hugging Face cache;
     from then on everything is offline and free.
     """
-    global _local_model
+    global _local_embedding_model
 
-    if _local_model is None:
+    if _local_embedding_model is None:
         from sentence_transformers import SentenceTransformer
 
-        _local_model = SentenceTransformer(LOCAL_MODEL)
-    return np.asarray(_local_model.encode(texts), dtype=np.float32)
+        _local_embedding_model = SentenceTransformer(LOCAL_EMBEDDING_MODEL)
+    return np.asarray(_local_embedding_model.encode(texts), dtype=np.float32)
 
 def embed(texts, backend="openai"):
     """Embed a list of texts with the chosen backend."""

@@ -1,5 +1,5 @@
 import numpy as np
-from config import OPENAI_MODEL, OPENAI_PRICE_PER_M, OPENAI_BATCH_SIZE, OPENAI_BATCH_CHARS, LOCAL_MODEL
+from config import CLOUD_EMBEDDING_MODEL, OPENAI_PRICE_PER_M, OPENAI_BATCH_SIZE, OPENAI_BATCH_CHARS, LOCAL_EMBEDDING_MODEL
 
 def cosine_similarity(vector_a, vector_b):
     vector_a = np.array(vector_a, dtype=np.float32)
@@ -29,7 +29,7 @@ def embed_openai(content: list[str]):
     client = OpenAI()
     vectors, tokens = [], 0
     for batch in _openai_batches(content):
-        r = client.embeddings.create(model=OPENAI_MODEL, input=batch)
+        r = client.embeddings.create(model=CLOUD_EMBEDDING_MODEL, input=batch)
         tokens += r.usage.total_tokens
         vectors.extend(d.embedding for d in r.data)
 
@@ -38,16 +38,16 @@ def embed_openai(content: list[str]):
 
     return np.array(vectors, dtype=np.float32)
 
-_local_model = None
+_local_embedding_model = None
 
 def embed_local(content: list[str]):
-    global _local_model
+    global _local_embedding_model
 
-    if _local_model is None:
+    if _local_embedding_model is None:
         from sentence_transformers import SentenceTransformer
 
-        _local_model = SentenceTransformer(LOCAL_MODEL)
-    return np.asarray(_local_model.encode(content), dtype=np.float32)    
+        _local_embedding_model = SentenceTransformer(LOCAL_EMBEDDING_MODEL)
+    return np.asarray(_local_embedding_model.encode(content), dtype=np.float32)    
 
 
 def embed(content: list[str], backend: str = "openai") -> np.ndarray[np.floating]:
